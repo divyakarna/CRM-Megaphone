@@ -400,7 +400,10 @@ def index():
 
 # ─── BOOT ─────────────────────────────────────────────────────────────────────
 
-if __name__ == "__main__":
+# Always init DB on startup (works with python app.py, flask run, and gunicorn)
+with app.app_context():
     init_db()
+
+if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=False)
