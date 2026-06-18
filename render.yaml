@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: podcaster-crm
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 60
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: podcaster-crm-db
+          property: connectionString
+      - key: ANTHROPIC_API_KEY
+        sync: false   # you set this manually in Render dashboard
+
+databases:
+  - name: podcaster-crm-db
+    plan: free
+    databaseName: podcaster_crm
+    user: crm_user

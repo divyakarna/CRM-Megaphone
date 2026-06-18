@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Podcaster CRM — AI Ko-Bato</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --pink-50:#fff0f3;--pink-100:#ffd6de;--pink-200:#ffadbf;--pink-300:#ff85a1;
+  --pink-400:#f7607e;--pink-500:#e84068;--pink-600:#c4284f;
+  --olive-50:#f5f5ee;--olive-100:#e8e8d8;--olive-200:#cece9e;--olive-300:#a8a86a;
+  --olive-400:#7d7d3e;--olive-500:#5a5a2a;--olive-600:#3d3d1a;
+  --cream:#fdf8f5;--cream2:#faf3ef;
+  --text:#2d2418;--text2:#6b5c4e;--text3:#9e8878;
+  --border:rgba(93,60,40,0.11);--border2:rgba(93,60,40,0.2);
+  --r:10px;--rsm:6px;
+  --shadow:0 2px 14px rgba(180,100,120,0.09);
+}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);min-height:100vh;font-size:14px}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--pink-50)}
+::-webkit-scrollbar-thumb{background:var(--pink-200);border-radius:3px}
+
+/* ── NAV ── */
+.nav{background:linear-gradient(135deg,#fff5f7 0%,#f8f8ee 100%);border-bottom:1px solid var(--border);padding:0 28px;display:flex;align-items:center;gap:20px;height:58px;position:sticky;top:0;z-index:100}
+.nav-logo{font-family:'DM Serif Display',serif;font-size:19px;color:var(--pink-500);display:flex;align-items:center;gap:9px;letter-spacing:-0.3px;white-space:nowrap}
+.nav-logo span{color:var(--olive-400);font-style:italic}
+.nav-tabs{display:flex;gap:2px;margin-left:10px;overflow-x:auto}
+.nav-tab{padding:7px 15px;border-radius:var(--rsm);font-size:13px;border:none;background:none;cursor:pointer;color:var(--text2);display:flex;align-items:center;gap:6px;transition:all .15s;font-family:'DM Sans',sans-serif;white-space:nowrap}
+.nav-tab:hover{background:rgba(248,160,180,.15);color:var(--pink-500)}
+.nav-tab.active{background:var(--pink-100);color:var(--pink-600);font-weight:500}
+.fu-count{background:var(--pink-500);color:#fff;font-size:10px;font-weight:600;padding:1px 6px;border-radius:20px;margin-left:2px}
+.nav-right{margin-left:auto;display:flex;gap:8px;align-items:center;flex-shrink:0}
+.btn{padding:8px 16px;border-radius:var(--rsm);font-size:13px;cursor:pointer;border:1px solid var(--border2);background:#fff;color:var(--text);display:inline-flex;align-items:center;gap:6px;font-family:'DM Sans',sans-serif;font-weight:500;transition:all .15s;text-decoration:none}
+.btn:hover{background:var(--pink-50);border-color:var(--pink-300)}
+.btn-primary{background:var(--pink-500);color:#fff;border-color:var(--pink-500)}
+.btn-primary:hover{background:var(--pink-600);border-color:var(--pink-600)}
+.btn-sm{padding:5px 11px;font-size:12px}
+.btn-danger{color:#b71c1c;border-color:#ffcdd2}
+.btn-danger:hover{background:#ffebee}
+
+/* ── PAGES ── */
+.page{display:none;padding:26px;max-width:1300px;margin:0 auto}
+.page.active{display:block}
+.ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;gap:12px;flex-wrap:wrap}
+.pt{font-family:'DM Serif Display',serif;font-size:24px;letter-spacing:-0.3px}
+.ps{font-size:13px;color:var(--text3);margin-top:3px}
+
+/* ── METRICS ── */
+.mgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:12px;margin-bottom:22px}
+.mc{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;position:relative;overflow:hidden;transition:box-shadow .15s}
+.mc:hover{box-shadow:var(--shadow)}
+.mc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--acc,var(--pink-300))}
+.mc-label{font-size:11px;color:var(--text3);margin-bottom:7px;font-weight:500;text-transform:uppercase;letter-spacing:.5px}
+.mc-value{font-size:32px;font-weight:300;font-family:'DM Serif Display',serif}
+.mc-sub{font-size:11px;color:var(--text3);margin-top:3px}
+
+/* ── CHARTS ── */
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
+.cc{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:18px}
+.ct{font-size:13px;font-weight:500;color:var(--text2);margin-bottom:14px;display:flex;align-items:center;gap:6px}
+
+/* ── BADGES ── */
+.badge{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500;white-space:nowrap;display:inline-block}
+.b-onboarded{background:#e8f5e9;color:#2e7d32}
+.b-reach{background:var(--pink-50);color:var(--pink-600)}
+.b-talks{background:#fff8e1;color:#f57f17}
+.b-interested{background:var(--olive-50);color:var(--olive-500)}
+.b-followup{background:#fce4ec;color:#c62828}
+.b-not{background:#f5f5f5;color:#757575}
+.b-rejected{background:#ffebee;color:#b71c1c}
+.b-contacted{background:#e3f2fd;color:#1565c0}
+
+/* ── TABLE ── */
+.toolbar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.sw{position:relative;flex:1;min-width:200px}
+.sw i{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:16px;pointer-events:none}
+.sw input{width:100%;padding:9px 12px 9px 34px;border:1px solid var(--border);border-radius:var(--rsm);background:#fff;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif}
+.sw input:focus{outline:none;border-color:var(--pink-300)}
+select.flt{padding:9px 12px;border:1px solid var(--border);border-radius:var(--rsm);background:#fff;color:var(--text);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif}
+select.flt:focus{outline:none;border-color:var(--olive-300)}
+.tw{background:#fff;border:1px solid var(--border);border-radius:var(--r);overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:700px}
+th{background:linear-gradient(135deg,var(--pink-50),var(--olive-50));padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--text2);border-bottom:1px solid var(--border);white-space:nowrap;text-transform:uppercase;letter-spacing:.4px}
+td{padding:12px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--pink-50)}
+.av{width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0}
+.ab{background:none;border:none;cursor:pointer;color:var(--text3);padding:5px;border-radius:var(--rsm);font-size:17px;transition:all .12s}
+.ab:hover{background:var(--pink-50);color:var(--pink-500)}
+.ab.del:hover{background:#ffebee;color:#b71c1c}
+.pdot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:5px}
+.ph-{background:#e84068}.pm-{background:#a8a86a}.pl-{background:#5a5a2a}
+.tag{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;font-size:11px;background:var(--olive-50);color:var(--olive-500);border:1px solid var(--olive-100)}
+
+/* ── MODAL ── */
+.mo{display:none;position:fixed;inset:0;background:rgba(45,36,24,.4);z-index:200;align-items:center;justify-content:center;padding:20px}
+.mo.open{display:flex}
+.mbox{background:#fff;border-radius:14px;padding:26px;width:100%;max-width:640px;max-height:88vh;overflow-y:auto;border:1px solid var(--border)}
+.mh{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.mt{font-family:'DM Serif Display',serif;font-size:20px}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg.full{grid-column:1/-1}
+label.fl{font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.fi{padding:9px 11px;border:1px solid var(--border);border-radius:var(--rsm);background:var(--cream);color:var(--text);font-size:13px;width:100%;font-family:'DM Sans',sans-serif;transition:border .15s}
+.fi:focus{outline:none;border-color:var(--pink-300);background:#fff}
+textarea.fi{resize:vertical;min-height:72px}
+.fa{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+
+/* ── AI PANEL ── */
+.aip{background:linear-gradient(135deg,#fff5f7,#f8f8ee);border:1px solid var(--pink-200);border-radius:var(--r);padding:20px;margin-bottom:20px}
+.aih{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.aii{width:34px;height:34px;background:linear-gradient(135deg,var(--pink-400),var(--olive-400));border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:17px;flex-shrink:0}
+.air{margin-top:14px;padding:16px;background:#fff;border-radius:var(--rsm);border:1px solid var(--border);font-size:13px;line-height:1.75;color:var(--text);white-space:pre-wrap;min-height:50px;max-height:280px;overflow-y:auto}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.chip{padding:5px 13px;border-radius:20px;border:1px solid var(--pink-200);background:#fff;color:var(--pink-500);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .12s}
+.chip:hover{background:var(--pink-100);border-color:var(--pink-300)}
+.ai-row{display:flex;gap:10px}
+.ai-input{flex:1;padding:10px 14px;border:1px solid var(--border2);border-radius:var(--rsm);background:#fff;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif}
+.ai-input:focus{outline:none;border-color:var(--pink-400)}
+.think{color:var(--text3);font-size:13px;display:flex;align-items:center;gap:6px}
+.dots span{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--pink-400);animation:dp 1.4s infinite}
+.dots span:nth-child(2){animation-delay:.2s}
+.dots span:nth-child(3){animation-delay:.4s}
+@keyframes dp{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
+
+/* ── EMAIL ── */
+.el{display:flex;flex-direction:column;gap:10px}
+.ei{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:16px;display:flex;gap:14px;transition:box-shadow .15s}
+.ei:hover{box-shadow:var(--shadow)}
+.eic{width:38px;height:38px;border-radius:50%;background:var(--pink-50);color:var(--pink-500);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;border:1px solid var(--pink-100)}
+
+/* ── FOLLOW-UP ── */
+.fuc{display:flex;gap:12px;align-items:center;background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:10px;transition:box-shadow .15s;flex-wrap:wrap}
+.fuc:hover{box-shadow:var(--shadow)}
+.fuic{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.fo .fuic{background:#ffebee;color:#b71c1c}
+.fu .fuic{background:var(--olive-50);color:var(--olive-400)}
+
+/* ── DETAIL ── */
+.dh{display:flex;align-items:center;gap:16px;margin-bottom:20px;padding-bottom:18px;border-bottom:1px solid var(--border)}
+.dav{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:600;flex-shrink:0}
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.dsec{background:var(--cream);border-radius:var(--rsm);padding:14px;border:1px solid var(--border)}
+.dst{font-size:10px;font-weight:600;color:var(--text3);margin-bottom:10px;text-transform:uppercase;letter-spacing:.6px}
+.dr{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);font-size:13px}
+.dr:last-child{border-bottom:none}
+.drl{color:var(--text3)}
+.drv{font-weight:500;text-align:right;max-width:180px;word-break:break-word}
+.nbox{background:var(--cream);border-radius:var(--rsm);padding:13px;font-size:13px;line-height:1.7;border:1px solid var(--border)}
+
+/* ── RECENT ── */
+.rc{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:18px}
+.ri{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.ri:last-child{border-bottom:none}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--olive-500);color:#fff;padding:12px 18px;border-radius:var(--r);font-size:13px;z-index:999;transform:translateY(80px);opacity:0;transition:all .3s;display:flex;align-items:center;gap:8px;box-shadow:0 4px 20px rgba(0,0,0,.15)}
+.toast.show{transform:translateY(0);opacity:1}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:48px 20px;color:var(--text3)}
+.empty i{font-size:40px;margin-bottom:12px;display:block;color:var(--pink-200)}
+.empty p{font-size:14px}
+
+/* ── LOADER ── */
+.loader{display:flex;align-items:center;justify-content:center;padding:40px;color:var(--text3);gap:10px;font-size:14px}
+
+@media(max-width:640px){.cgrid{grid-template-columns:1fr}.fgrid{grid-template-columns:1fr}.dgrid{grid-template-columns:1fr}.nav-tabs{display:none}}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-logo"><i class="ti ti-microphone-2" aria-hidden="true"></i>Podcaster <span>CRM</span></div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('dashboard',this)"><i class="ti ti-layout-dashboard" aria-hidden="true"></i>Dashboard</button>
+    <button class="nav-tab" onclick="showPage('clients',this)"><i class="ti ti-users" aria-hidden="true"></i>Clients</button>
+    <button class="nav-tab" onclick="showPage('emails',this)"><i class="ti ti-mail" aria-hidden="true"></i>Emails</button>
+    <button class="nav-tab" onclick="showPage('followups',this)"><i class="ti ti-bell" aria-hidden="true"></i>Follow-ups<span class="fu-count" id="fu-n" style="display:none"></span></button>
+    <button class="nav-tab" onclick="showPage('ai',this)"><i class="ti ti-sparkles" aria-hidden="true"></i>AI Assistant</button>
+  </div>
+  <div class="nav-right">
+    <button class="btn btn-primary" onclick="openAdd()"><i class="ti ti-plus" aria-hidden="true"></i>Add client</button>
+  </div>
+</nav>
+
+<!-- ═══ DASHBOARD ═══ -->
+<div class="page active" id="page-dashboard">
+  <div class="ph"><div><div class="pt">Dashboard</div><div class="ps">Your YouTube podcaster outreach at a glance</div></div></div>
+  <div class="mgrid" id="metrics"><div class="loader"><i class="ti ti-loader" aria-hidden="true"></i> Loading...</div></div>
+  <div class="cgrid">
+    <div class="cc"><div class="ct"><i class="ti ti-chart-donut" style="color:var(--pink-400)" aria-hidden="true"></i>Status breakdown</div>
+      <div id="dl" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;font-size:12px"></div>
+      <div style="position:relative;height:190px"><canvas id="dc" role="img" aria-label="Status donut chart"></canvas></div>
+    </div>
+    <div class="cc"><div class="ct"><i class="ti ti-chart-line" style="color:var(--olive-400)" aria-hidden="true"></i>Clients added per month</div>
+      <div style="position:relative;height:220px"><canvas id="lc" role="img" aria-label="Monthly trend line chart"></canvas></div>
+    </div>
+  </div>
+  <div class="cgrid">
+    <div class="cc"><div class="ct"><i class="ti ti-world" style="color:var(--pink-400)" aria-hidden="true"></i>By country</div>
+      <div style="position:relative;height:190px"><canvas id="coc" role="img" aria-label="Country bar chart"></canvas></div>
+    </div>
+    <div class="cc"><div class="ct"><i class="ti ti-tag" style="color:var(--olive-400)" aria-hidden="true"></i>Podcast themes</div>
+      <div style="position:relative;height:190px"><canvas id="tc" role="img" aria-label="Themes bar chart"></canvas></div>
+    </div>
+  </div>
+  <div class="rc">
+    <div style="font-size:14px;font-weight:500;margin-bottom:14px;color:var(--text2)">Recent clients</div>
+    <div id="recent"></div>
+  </div>
+</div>
+
+<!-- ═══ CLIENTS ═══ -->
+<div class="page" id="page-clients">
+  <div class="ph"><div><div class="pt">All Clients</div><div class="ps" id="clabel"></div></div></div>
+  <div class="toolbar">
+    <div class="sw"><i class="ti ti-search" aria-hidden="true"></i><input type="text" placeholder="Search channels, themes, countries…" id="qin" oninput="filterTable()"></div>
+    <select class="flt" id="fsStatus" onchange="filterTable()">
+      <option value="">All statuses</option>
+      <option>To Reach Out</option><option>Contacted</option><option>In Talks</option>
+      <option>Interested</option><option>Follow-up Needed</option><option>Onboarded</option>
+      <option>Not Interested</option><option>Rejected</option>
+    </select>
+    <select class="flt" id="fsCountry" onchange="filterTable()"><option value="">All countries</option></select>
+    <select class="flt" id="fsPriority" onchange="filterTable()"><option value="">All priorities</option><option>High</option><option>Medium</option><option>Low</option></select>
+  </div>
+  <div class="tw"><table>
+    <thead><tr>
+      <th>Channel</th><th>Host</th><th>Theme</th><th>Country</th><th>Subs</th>
+      <th>Status</th><th>Priority</th><th>Follow-up</th><th></th>
+    </tr></thead>
+    <tbody id="ctable"></tbody>
+  </table></div>
+</div>
+
+<!-- ═══ EMAILS ═══ -->
+<div class="page" id="page-emails">
+  <div class="ph">
+    <div><div class="pt">Email Tracker</div><div class="ps">All logged communications</div></div>
+    <button class="btn btn-primary" onclick="openEmailModal()"><i class="ti ti-plus" aria-hidden="true"></i>Log communication</button>
+  </div>
+  <div class="el" id="elist"></div>
+</div>
+
+<!-- ═══ FOLLOW-UPS ═══ -->
+<div class="page" id="page-followups">
+  <div class="ph"><div><div class="pt">Follow-ups</div><div class="ps">Clients needing your attention</div></div></div>
+  <div id="fulist"></div>
+</div>
+
+<!-- ═══ AI ASSISTANT ═══ -->
+<div class="page" id="page-ai">
+  <div class="ph"><div><div class="pt">AI Assistant</div><div class="ps">Ask anything about your pipeline — powered by Claude</div></div></div>
+  <div class="aip">
+    <div class="aih">
+      <div class="aii"><i class="ti ti-sparkles" aria-hidden="true"></i></div>
+      <div><div style="font-weight:500;font-size:14px">Your CRM intelligence layer</div><div style="font-size:12px;color:var(--text3)">Knows all your client data · Powered by Claude</div></div>
+    </div>
+    <div class="chips" id="chips">
+      <button class="chip" onclick="askChip('Which clients should I follow up with this week?')">Who to follow up?</button>
+      <button class="chip" onclick="askChip('Draft a warm pitch email for my most interested client')">Draft pitch email</button>
+      <button class="chip" onclick="askChip('Which country has the most clients? Give me a summary.')">Country breakdown</button>
+      <button class="chip" onclick="askChip('Who are my highest priority clients and what is their current status?')">Top priority clients</button>
+      <button class="chip" onclick="askChip('What podcast themes are most common in my CRM?')">Common themes</button>
+      <button class="chip" onclick="askChip('Give me a 5-step outreach strategy for podcasters who haven\'t responded')">Outreach strategy</button>
+    </div>
+    <div class="ai-row">
+      <input class="ai-input" id="aiIn" placeholder="e.g. Draft a collab email for Nepalaya Podcast…" onkeydown="if(event.key==='Enter')askAI()">
+      <button class="btn btn-primary" onclick="askAI()"><i class="ti ti-send" aria-hidden="true"></i>Ask</button>
+    </div>
+    <div id="airesp" style="display:none" class="air"></div>
+  </div>
+
+  <div class="cgrid">
+    <div class="cc">
+      <div class="ct"><i class="ti ti-sparkles" style="color:var(--pink-400)" aria-hidden="true"></i>Quick actions</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button class="btn" style="justify-content:flex-start" onclick="askChip('Write a 3-sentence intro pitch for new podcasters about AI Ko-Bato')"><i class="ti ti-edit" style="color:var(--pink-400)" aria-hidden="true"></i>Write intro pitch template</button>
+        <button class="btn" style="justify-content:flex-start" onclick="askChip('Which clients are most likely to convert based on status and notes?')"><i class="ti ti-chart-bar" style="color:var(--olive-400)" aria-hidden="true"></i>Predict best conversions</button>
+        <button class="btn" style="justify-content:flex-start" onclick="askChip('Suggest 5 Nepali or South Asian podcast channels I should add to my CRM')"><i class="ti ti-bulb" style="color:var(--pink-400)" aria-hidden="true"></i>Suggest new targets</button>
+        <button class="btn" style="justify-content:flex-start" onclick="askChip('Give me a weekly outreach plan based on my current pipeline')"><i class="ti ti-calendar" style="color:var(--olive-400)" aria-hidden="true"></i>Generate weekly plan</button>
+      </div>
+    </div>
+    <div class="cc">
+      <div class="ct"><i class="ti ti-info-circle" style="color:var(--olive-400)" aria-hidden="true"></i>Live CRM snapshot</div>
+      <div id="snapshot" style="font-size:13px;color:var(--text2);line-height:1.9"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ DETAIL MODAL ═══ -->
+<div class="mo" id="detailMo"><div class="mbox" id="detailBox"></div></div>
+
+<!-- ═══ ADD/EDIT MODAL ═══ -->
+<div class="mo" id="addMo">
+  <div class="mbox">
+    <div class="mh"><div class="mt" id="mtitle">Add new client</div><button class="ab" onclick="closeMo('addMo')"><i class="ti ti-x"></i></button></div>
+    <div class="fgrid">
+      <div class="fg"><label class="fl">YouTube channel *</label><input class="fi" id="f-channel" placeholder="e.g. The Diary Of A CEO"></div>
+      <div class="fg"><label class="fl">Host / contact name</label><input class="fi" id="f-host" placeholder="e.g. Steven Bartlett"></div>
+      <div class="fg"><label class="fl">Channel URL</label><input class="fi" id="f-url" placeholder="https://youtube.com/…"></div>
+      <div class="fg"><label class="fl">Email</label><input class="fi" id="f-email" type="email" placeholder="host@example.com"></div>
+      <div class="fg"><label class="fl">Phone / WhatsApp</label><input class="fi" id="f-phone" placeholder="+977 98…"></div>
+      <div class="fg"><label class="fl">Country</label><input class="fi" id="f-country" placeholder="e.g. Nepal, India, USA"></div>
+      <div class="fg"><label class="fl">Podcast theme</label><input class="fi" id="f-theme" placeholder="e.g. Business, Tech, Education"></div>
+      <div class="fg"><label class="fl">Subscriber count</label><input class="fi" id="f-subs" placeholder="e.g. 120K"></div>
+      <div class="fg"><label class="fl">Status</label>
+        <select class="fi" id="f-status"><option>To Reach Out</option><option>Contacted</option><option>In Talks</option><option>Interested</option><option>Follow-up Needed</option><option>Onboarded</option><option>Not Interested</option><option>Rejected</option></select>
+      </div>
+      <div class="fg"><label class="fl">Priority</label>
+        <select class="fi" id="f-priority"><option>High</option><option selected>Medium</option><option>Low</option></select>
+      </div>
+      <div class="fg"><label class="fl">Follow-up date</label><input class="fi" id="f-followup" type="date"></div>
+      <div class="fg"><label class="fl">Source</label><input class="fi" id="f-source" placeholder="YouTube search, referral…"></div>
+      <div class="fg full"><label class="fl">Channel description</label><textarea class="fi" id="f-description" placeholder="What is this channel about?"></textarea></div>
+      <div class="fg full"><label class="fl">Internal notes</label><textarea class="fi" id="f-notes" placeholder="Pitch ideas, what to discuss…"></textarea></div>
+    </div>
+    <div class="fa">
+      <button class="btn" onclick="closeMo('addMo')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveClient()"><i class="ti ti-check" aria-hidden="true"></i>Save client</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ EMAIL MODAL ═══ -->
+<div class="mo" id="emailMo">
+  <div class="mbox">
+    <div class="mh"><div class="mt">Log communication</div><button class="ab" onclick="closeMo('emailMo')"><i class="ti ti-x"></i></button></div>
+    <div class="fgrid">
+      <div class="fg"><label class="fl">Client / channel</label><select class="fi" id="e-client"></select></div>
+      <div class="fg"><label class="fl">Type</label>
+        <select class="fi" id="e-type"><option>Email sent</option><option>Email received</option><option>WhatsApp</option><option>DM (Instagram)</option><option>DM (YouTube)</option><option>Call</option><option>Meeting</option></select>
+      </div>
+      <div class="fg full"><label class="fl">Subject / topic</label><input class="fi" id="e-subject" placeholder="e.g. Intro to AI Ko-Bato collab"></div>
+      <div class="fg"><label class="fl">Date</label><input class="fi" id="e-date" type="date"></div>
+      <div class="fg"><label class="fl">Response status</label>
+        <select class="fi" id="e-status"><option>Sent</option><option>Replied</option><option>No response</option><option>Bounced</option></select>
+      </div>
+      <div class="fg full"><label class="fl">Notes / summary</label><textarea class="fi" id="e-notes" placeholder="What was discussed or sent?"></textarea></div>
+    </div>
+    <div class="fa">
+      <button class="btn" onclick="closeMo('emailMo')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEmail()"><i class="ti ti-check" aria-hidden="true"></i>Log it</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><i class="ti ti-check" aria-hidden="true"></i><span id="tmsg"></span></div>
+
+<script>
+// ── HELPERS ──────────────────────────────────────────────────────────────────
+const AVC=[['#ffd6de','#c4284f'],['#e8e8d8','#3d3d1a'],['#fce4ec','#880e4f'],
+           ['#e8f5e9','#1b5e20'],['#fff8e1','#e65100'],['#e3f2fd','#0d47a1'],
+           ['#f3e5f5','#4a148c'],['#e0f7fa','#006064']];
+function avc(s){let h=0;for(let c of s)h=(h*31+c.charCodeAt(0))%AVC.length;return AVC[Math.abs(h)]}
+function ini(s){return(s||'?').split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase()||'?'}
+function sbadge(s){
+  const m={'Onboarded':'b-onboarded','To Reach Out':'b-reach','In Talks':'b-talks',
+           'Interested':'b-interested','Follow-up Needed':'b-followup',
+           'Not Interested':'b-not','Rejected':'b-rejected','Contacted':'b-contacted'};
+  return`<span class="badge ${m[s]||'b-reach'}">${s}</span>`;
+}
+function toast(msg){const t=document.getElementById('toast');document.getElementById('tmsg').textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800)}
+function fmtDate(d){return d?d.substring?d.substring(0,10):new Date(d).toISOString().substring(0,10):'—'}
+
+// ── STATE ────────────────────────────────────────────────────────────────────
+let clients=[], comms=[], editId=null;
+
+// ── API ──────────────────────────────────────────────────────────────────────
+async function api(path,opts={}){
+  const r=await fetch(path,{headers:{'Content-Type':'application/json'},...opts});
+  return r.json();
+}
+
+async function loadAll(){
+  [clients,comms]=await Promise.all([api('/api/clients'),api('/api/communications')]);
+  updateFUBadge();
+}
+
+// ── NAV ──────────────────────────────────────────────────────────────────────
+function showPage(p,el){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  el.classList.add('active');
+  if(p==='dashboard')renderDash();
+  if(p==='clients'){renderTable();populateCountryFilter()}
+  if(p==='emails')renderEmails();
+  if(p==='followups')renderFollowups();
+  if(p==='ai')renderSnapshot();
+}
+
+function updateFUBadge(){
+  const today=new Date().toISOString().split('T')[0];
+  const n=clients.filter(c=>c.followup&&fmtDate(c.followup)<=today&&!['Onboarded','Rejected','Not Interested'].includes(c.status)).length;
+  const b=document.getElementById('fu-n');
+  if(n>0){b.textContent=n;b.style.display='inline'}else{b.style.display='none'}
+}
+
+// ── DASHBOARD ────────────────────────────────────────────────────────────────
+let dChart,lChart,coChart,tChart;
+async function renderDash(){
+  const stats=await api('/api/stats');
+  const sc=stats.status_counts;
+  const statusList=['Onboarded','Interested','In Talks','Contacted','To Reach Out','Follow-up Needed','Not Interested','Rejected'];
+  const accs=['var(--olive-400)','var(--pink-500)','#f57f17','#1565c0','var(--pink-300)','#b71c1c','#9e9e9e','#e53935'];
+  const subs=['Active clients','Hot leads','Active convos','Awaiting reply','Not contacted yet','Needs action','Declined','Not a fit'];
+
+  document.getElementById('metrics').innerHTML=[
+    ['Total',stats.total,'All channels tracked','var(--pink-400)'],
+    ['Onboarded',sc['Onboarded']||0,'Active clients','var(--olive-400)'],
+    ['Interested',sc['Interested']||0,'Hot leads','var(--pink-500)'],
+    ['In Talks',sc['In Talks']||0,'Active convos','#f57f17'],
+    ['To Reach',sc['To Reach Out']||0,'In queue','#1565c0'],
+    ['Follow-ups',sc['Follow-up Needed']||0,'Action needed','#b71c1c'],
+  ].map(([l,v,s,a])=>`<div class="mc" style="--acc:${a}"><div class="mc-label">${l}</div><div class="mc-value">${v}</div><div class="mc-sub">${s}</div></div>`).join('');
+
+  const dColors=['#5a5a2a','#e84068','#f57f17','#1565c0','#ffadbf','#b71c1c','#bdbdbd','#e53935'];
+  const dData=statusList.map(s=>sc[s]||0);
+  document.getElementById('dl').innerHTML=statusList.map((s,i)=>`<span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2)"><span style="width:9px;height:9px;border-radius:2px;background:${dColors[i]};display:inline-block"></span>${s} ${sc[s]||0}</span>`).join('');
+  if(dChart)dChart.destroy();
+  dChart=new Chart(document.getElementById('dc'),{type:'doughnut',data:{labels:statusList,datasets:[{data:dData,backgroundColor:dColors,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});
+
+  const mLabels=stats.monthly.map(m=>m.month),mVals=stats.monthly.map(m=>m.count);
+  if(lChart)lChart.destroy();
+  lChart=new Chart(document.getElementById('lc'),{type:'line',data:{labels:mLabels,datasets:[{label:'Added',data:mVals,borderColor:'#e84068',backgroundColor:'rgba(232,64,104,.08)',tension:.4,fill:true,pointBackgroundColor:'#e84068',pointRadius:5,pointBorderColor:'#fff',pointBorderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1},grid:{color:'rgba(0,0,0,.04)'}},x:{grid:{display:false}}}}});
+
+  const cLabels=stats.country_counts.map(r=>r.country),cVals=stats.country_counts.map(r=>r.count);
+  if(coChart)coChart.destroy();
+  coChart=new Chart(document.getElementById('coc'),{type:'bar',data:{labels:cLabels,datasets:[{data:cVals,backgroundColor:'#e84068',borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1},grid:{color:'rgba(0,0,0,.04)'}},x:{grid:{display:false}}}}});
+
+  const tLabels=stats.theme_counts.map(r=>r.theme),tVals=stats.theme_counts.map(r=>r.count);
+  if(tChart)tChart.destroy();
+  tChart=new Chart(document.getElementById('tc'),{type:'bar',data:{labels:tLabels,datasets:[{data:tVals,backgroundColor:'#7d7d3e',borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1},grid:{color:'rgba(0,0,0,.04)'}},x:{grid:{display:false}}}}});
+
+  const rec=clients.slice(0,5);
+  document.getElementById('recent').innerHTML=rec.length?rec.map(c=>{
+    const[bg,fg]=avc(c.channel);
+    return`<div class="ri"><div class="av" style="background:${bg};color:${fg}">${ini(c.channel)}</div><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.channel}</div><div style="font-size:11px;color:var(--text3)">${c.country||'—'} · ${c.theme||'—'}</div></div>${sbadge(c.status)}</div>`;
+  }).join(''):`<div class="empty"><i class="ti ti-users"></i><p>No clients yet. Click "Add client" to start.</p></div>`;
+}
+
+// ── CLIENTS TABLE ─────────────────────────────────────────────────────────────
+function populateCountryFilter(){
+  const countries=[...new Set(clients.map(c=>c.country).filter(Boolean))].sort();
+  const sel=document.getElementById('fsCountry');const cur=sel.value;
+  sel.innerHTML='<option value="">All countries</option>'+countries.map(c=>`<option${c===cur?' selected':''}>${c}</option>`).join('');
+}
+function filterTable(){
+  const q=(document.getElementById('qin').value||'').toLowerCase();
+  const sf=document.getElementById('fsStatus').value;
+  const cf=document.getElementById('fsCountry').value;
+  const pf=document.getElementById('fsPriority').value;
+  const filtered=clients.filter(c=>{
+    const tx=(c.channel+c.host+c.theme+c.country+c.email+c.notes+c.description).toLowerCase();
+    return(!q||tx.includes(q))&&(!sf||c.status===sf)&&(!cf||c.country===cf)&&(!pf||c.priority===pf);
+  });
+  document.getElementById('clabel').textContent=`${filtered.length} of ${clients.length} clients`;
+  renderRows(filtered);
+}
+function renderTable(){
+  document.getElementById('clabel').textContent=`${clients.length} clients`;
+  populateCountryFilter();
+  renderRows(clients);
+}
+function renderRows(list){
+  const tb=document.getElementById('ctable');
+  tb.innerHTML=list.length?list.map(c=>{
+    const[bg,fg]=avc(c.channel);
+    const pc=c.priority==='High'?'ph-':c.priority==='Low'?'pl-':'pm-';
+    return`<tr>
+      <td><div style="display:flex;align-items:center;gap:9px"><div class="av" style="background:${bg};color:${fg}">${ini(c.channel)}</div><div><div style="font-weight:500">${c.channel}</div>${c.url?`<div style="font-size:11px"><a href="${c.url}" target="_blank" style="color:var(--pink-500)">youtube ↗</a></div>`:''}</div></div></td>
+      <td><div>${c.host||'—'}</div><div style="font-size:11px;color:var(--text3)">${c.email||''}</div></td>
+      <td>${c.theme?`<span class="tag">${c.theme}</span>`:'—'}</td>
+      <td>${c.country||'—'}</td>
+      <td>${c.subs||'—'}</td>
+      <td>${sbadge(c.status)}</td>
+      <td><span class="pdot ${pc}"></span>${c.priority}</td>
+      <td style="font-size:12px;color:var(--text3)">${fmtDate(c.followup)}</td>
+      <td style="white-space:nowrap">
+        <button class="ab" onclick="showDetail(${c.id})" title="View"><i class="ti ti-eye"></i></button>
+        <button class="ab" onclick="openAdd(${c.id})" title="Edit"><i class="ti ti-edit"></i></button>
+        <button class="ab del" onclick="deleteClient(${c.id})" title="Delete"><i class="ti ti-trash"></i></button>
+      </td></tr>`;
+  }).join(''):`<tr><td colspan="9"><div class="empty"><i class="ti ti-search"></i><p>No clients match your filters.</p></div></td></tr>`;
+}
+
+// ── CLIENT DETAIL ─────────────────────────────────────────────────────────────
+function showDetail(id){
+  const c=clients.find(x=>x.id===id);if(!c)return;
+  const[bg,fg]=avc(c.channel);
+  const ce=comms.filter(e=>e.client_id===id);
+  document.getElementById('detailBox').innerHTML=`
+    <div class="mh"><div class="mt">Client profile</div><button class="ab" onclick="closeMo('detailMo')"><i class="ti ti-x"></i></button></div>
+    <div class="dh">
+      <div class="dav" style="background:${bg};color:${fg}">${ini(c.channel)}</div>
+      <div style="flex:1"><div style="font-family:'DM Serif Display',serif;font-size:19px">${c.channel}</div>
+        <div style="font-size:13px;color:var(--text3);margin-top:2px">${c.host||'—'} · ${c.country||'—'}</div>
+        <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">${sbadge(c.status)}<span class="tag">${c.subs||'—'} subscribers</span></div>
+      </div>
+    </div>
+    <div class="dgrid">
+      <div class="dsec"><div class="dst">Contact info</div>
+        <div class="dr"><span class="drl">Email</span><span class="drv" style="color:var(--pink-500)">${c.email||'—'}</span></div>
+        <div class="dr"><span class="drl">Phone</span><span class="drv">${c.phone||'—'}</span></div>
+        <div class="dr"><span class="drl">Country</span><span class="drv">${c.country||'—'}</span></div>
+        ${c.url?`<div class="dr"><span class="drl">Channel</span><span class="drv"><a href="${c.url}" target="_blank" style="color:var(--pink-500)">YouTube ↗</a></span></div>`:''}
+      </div>
+      <div class="dsec"><div class="dst">Pipeline</div>
+        <div class="dr"><span class="drl">Status</span><span class="drv">${sbadge(c.status)}</span></div>
+        <div class="dr"><span class="drl">Priority</span><span class="drv">${c.priority}</span></div>
+        <div class="dr"><span class="drl">Theme</span><span class="drv">${c.theme||'—'}</span></div>
+        <div class="dr"><span class="drl">Source</span><span class="drv">${c.source||'—'}</span></div>
+        <div class="dr"><span class="drl">Follow-up</span><span class="drv">${fmtDate(c.followup)}</span></div>
+        <div class="dr"><span class="drl">Added</span><span class="drv">${fmtDate(c.added)}</span></div>
+      </div>
+    </div>
+    ${c.description?`<div style="margin-bottom:12px"><div class="dst" style="margin-bottom:6px">Channel description</div><div class="nbox">${c.description}</div></div>`:''}
+    ${c.notes?`<div style="margin-bottom:12px"><div class="dst" style="margin-bottom:6px">Internal notes</div><div class="nbox">${c.notes}</div></div>`:''}
+    ${ce.length?`<div><div class="dst" style="margin-bottom:8px">Communications (${ce.length})</div>${ce.map(e=>`<div style="padding:9px 0;border-bottom:1px solid var(--border);font-size:13px"><strong>${e.subject||'—'}</strong><div style="color:var(--text3);font-size:12px;margin-top:2px">${e.type} · ${fmtDate(e.comm_date)} · ${e.status}</div>${e.notes?`<div style="color:var(--text2);margin-top:4px">${e.notes}</div>`:''}</div>`).join('')}</div>`:''}
+    <div class="fa" style="margin-top:20px">
+      <button class="btn" onclick="closeMo('detailMo');openAdd(${c.id})"><i class="ti ti-edit" aria-hidden="true"></i>Edit</button>
+      <button class="btn btn-danger" onclick="deleteClient(${c.id})"><i class="ti ti-trash" aria-hidden="true"></i>Delete</button>
+    </div>`;
+  document.getElementById('detailMo').classList.add('open');
+}
+
+// ── ADD / EDIT ─────────────────────────────────────────────────────────────────
+function openAdd(id){
+  editId=id||null;
+  const c=id?clients.find(x=>x.id===id):null;
+  document.getElementById('mtitle').textContent=c?'Edit client':'Add new client';
+  ['channel','host','url','email','phone','country','theme','subs','status','priority','source','description','notes'].forEach(k=>{
+    const el=document.getElementById('f-'+k);
+    if(el)el.value=c?(c[k]||''):(k==='priority'?'Medium':k==='status'?'To Reach Out':'');
+  });
+  const fu=document.getElementById('f-followup');
+  fu.value=c&&c.followup?fmtDate(c.followup):'';
+  document.getElementById('addMo').classList.add('open');
+}
+async function saveClient(){
+  const g=k=>document.getElementById('f-'+k).value.trim();
+  const data={channel:g('channel'),host:g('host'),url:g('url'),email:g('email'),phone:g('phone'),country:g('country'),theme:g('theme'),subs:g('subs'),status:g('status'),priority:g('priority'),followup:g('followup')||null,source:g('source'),description:g('description'),notes:g('notes')};
+  if(!data.channel){alert('Channel name is required');return}
+  if(editId){await api(`/api/clients/${editId}`,{method:'PUT',body:JSON.stringify(data)})}
+  else{await api('/api/clients',{method:'POST',body:JSON.stringify(data)})}
+  await loadAll();closeMo('addMo');
+  renderDash();renderTable();updateFUBadge();
+  toast(editId?'Client updated!':'Client added!');
+}
+async function deleteClient(id){
+  if(!confirm('Delete this client? This cannot be undone.'))return;
+  await api(`/api/clients/${id}`,{method:'DELETE'});
+  await loadAll();closeMo('detailMo');closeMo('addMo');
+  renderDash();renderTable();updateFUBadge();
+  toast('Client deleted.');
+}
+
+// ── EMAILS ──────────────────────────────────────────────────────────────────
+function renderEmails(){
+  const el=document.getElementById('elist');
+  if(!comms.length){el.innerHTML='<div class="empty"><i class="ti ti-mail"></i><p>No communications logged yet.</p></div>';return}
+  const icons={'Email sent':'ti-mail','Email received':'ti-mail-opened','WhatsApp':'ti-brand-whatsapp','DM (Instagram)':'ti-brand-instagram','DM (YouTube)':'ti-brand-youtube','Call':'ti-phone','Meeting':'ti-calendar'};
+  el.innerHTML=comms.map(e=>{
+    const cn=e.client_channel||'Unknown';
+    const[bg,fg]=avc(cn);
+    return`<div class="ei">
+      <div class="eic"><i class="ti ${icons[e.type]||'ti-mail'}" aria-hidden="true"></i></div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;flex-wrap:wrap">
+          <div class="av" style="width:24px;height:24px;background:${bg};color:${fg};font-size:10px">${ini(cn)}</div>
+          <strong style="font-size:13px">${cn}</strong>
+          <span class="badge ${e.status==='Replied'?'b-onboarded':e.status==='Sent'?'b-reach':'b-not'}">${e.status}</span>
+          <span style="font-size:12px;color:var(--text3);margin-left:auto">${fmtDate(e.comm_date)}</span>
+        </div>
+        <div style="font-size:13px;font-weight:500">${e.type} · ${e.subject||'—'}</div>
+        ${e.notes?`<div style="font-size:12px;color:var(--text3);margin-top:3px">${e.notes}</div>`:''}
+      </div>
+      <button class="ab del" onclick="deleteComm(${e.id})" title="Delete"><i class="ti ti-trash"></i></button>
+    </div>`;
+  }).join('');
+}
+function openEmailModal(){
+  const sel=document.getElementById('e-client');
+  sel.innerHTML=clients.map(c=>`<option value="${c.id}">${c.channel}</option>`).join('');
+  document.getElementById('e-date').value=new Date().toISOString().split('T')[0];
+  ['e-type','e-subject','e-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
+  document.getElementById('emailMo').classList.add('open');
+}
+async function saveEmail(){
+  const data={client_id:parseInt(document.getElementById('e-client').value),type:document.getElementById('e-type').value,subject:document.getElementById('e-subject').value,comm_date:document.getElementById('e-date').value||null,status:document.getElementById('e-status').value,notes:document.getElementById('e-notes').value};
+  await api('/api/communications',{method:'POST',body:JSON.stringify(data)});
+  await loadAll();closeMo('emailMo');renderEmails();toast('Communication logged!');
+}
+async function deleteComm(id){
+  if(!confirm('Delete this communication log?'))return;
+  await api(`/api/communications/${id}`,{method:'DELETE'});
+  await loadAll();renderEmails();toast('Deleted.');
+}
+
+// ── FOLLOW-UPS ────────────────────────────────────────────────────────────────
+function renderFollowups(){
+  const today=new Date().toISOString().split('T')[0];
+  const done=['Onboarded','Rejected','Not Interested'];
+  const ov=clients.filter(c=>c.followup&&fmtDate(c.followup)<=today&&!done.includes(c.status)).sort((a,b)=>fmtDate(a.followup).localeCompare(fmtDate(b.followup)));
+  const up=clients.filter(c=>c.followup&&fmtDate(c.followup)>today).sort((a,b)=>fmtDate(a.followup).localeCompare(fmtDate(b.followup)));
+  let html='';
+  if(ov.length){
+    html+=`<div style="font-size:13px;font-weight:500;color:#b71c1c;margin-bottom:10px;display:flex;align-items:center;gap:6px"><i class="ti ti-alert-circle" aria-hidden="true"></i>Overdue (${ov.length})</div>`;
+    html+=ov.map(c=>`<div class="fuc fo"><div class="fuic"><i class="ti ti-alert-circle" aria-hidden="true"></i></div><div style="flex:1"><div style="font-size:13px;font-weight:500">${c.channel}</div><div style="font-size:12px;color:var(--text3)">Due: ${fmtDate(c.followup)} · ${c.country||'—'}</div></div>${sbadge(c.status)}<button class="btn btn-sm" onclick="openAdd(${c.id})" style="margin-left:8px">Update</button></div>`).join('');
+    html+='<div style="height:18px"></div>';
+  }
+  if(up.length){
+    html+=`<div style="font-size:13px;font-weight:500;color:var(--olive-400);margin-bottom:10px;display:flex;align-items:center;gap:6px"><i class="ti ti-calendar" aria-hidden="true"></i>Upcoming (${up.length})</div>`;
+    html+=up.map(c=>`<div class="fuc fu"><div class="fuic"><i class="ti ti-calendar" aria-hidden="true"></i></div><div style="flex:1"><div style="font-size:13px;font-weight:500">${c.channel}</div><div style="font-size:12px;color:var(--text3)">On: ${fmtDate(c.followup)} · ${c.country||'—'}</div></div>${sbadge(c.status)}<button class="btn btn-sm" onclick="openAdd(${c.id})" style="margin-left:8px">Update</button></div>`).join('');
+  }
+  if(!ov.length&&!up.length)html=`<div class="empty"><i class="ti ti-check" style="color:var(--olive-300)" aria-hidden="true"></i><p>You are all caught up! No follow-ups scheduled.</p></div>`;
+  document.getElementById('fulist').innerHTML=html;
+}
+
+// ── AI ASSISTANT ──────────────────────────────────────────────────────────────
+function renderSnapshot(){
+  const today=new Date().toISOString().split('T')[0];
+  const ob=clients.filter(c=>c.status==='Onboarded').length;
+  const int=clients.filter(c=>c.status==='Interested').length;
+  const talks=clients.filter(c=>c.status==='In Talks').length;
+  const ov=clients.filter(c=>c.followup&&fmtDate(c.followup)<=today&&!['Onboarded','Rejected','Not Interested'].includes(c.status)).length;
+  const countries=[...new Set(clients.map(c=>c.country).filter(Boolean))].length;
+  document.getElementById('snapshot').innerHTML=[
+    ['Total clients',clients.length,'var(--text)'],
+    ['Onboarded',ob,'var(--olive-400)'],
+    ['Interested',int,'var(--pink-500)'],
+    ['In talks',talks,'#f57f17'],
+    ['Overdue follow-ups',ov,'#b71c1c'],
+    ['Countries reached',countries,'var(--text)'],
+    ['Emails logged',comms.length,'var(--text)'],
+  ].map(([l,v,c])=>`<div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding:5px 0"><span style="color:var(--text3)">${l}</span><strong style="color:${c}">${v}</strong></div>`).join('');
+}
+let aiLoading=false;
+async function askAI(){
+  if(aiLoading)return;
+  const q=document.getElementById('aiIn').value.trim();
+  if(!q)return;
+  aiLoading=true;
+  const box=document.getElementById('airesp');
+  box.style.display='block';
+  box.innerHTML='<span class="think"><span class="dots"><span></span><span></span><span></span></span>&nbsp;Thinking…</span>';
+  try{
+    const r=await api('/api/ai',{method:'POST',body:JSON.stringify({question:q})});
+    box.textContent=r.response||'No response received.';
+    document.getElementById('aiIn').value='';
+  }catch(e){box.textContent='Error reaching AI. Check your ANTHROPIC_API_KEY.'}
+  aiLoading=false;
+}
+function askChip(q){document.getElementById('aiIn').value=q;askAI()}
+
+// ── MODAL UTILS ───────────────────────────────────────────────────────────────
+function closeMo(id){document.getElementById(id).classList.remove('open')}
+document.querySelectorAll('.mo').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open')}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.mo.open').forEach(m=>m.classList.remove('open'))});
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+(async()=>{
+  await loadAll();
+  renderDash();
+})();
+</script>
+</body>
+</html>
