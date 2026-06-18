@@ -402,7 +402,11 @@ def index():
 
 # Always init DB on startup (works with python app.py, flask run, and gunicorn)
 with app.app_context():
-    init_db()
+    try:
+        init_db()
+    except Exception as e:
+        print(f"WARNING: DB init failed at startup: {e}")
+        print("The app will start but DB operations will fail until DATABASE_URL is set.")
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
