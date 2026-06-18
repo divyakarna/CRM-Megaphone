@@ -101,9 +101,9 @@ def init_db():
                 VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,CURRENT_DATE)
             """, c)
 
-        cur.execute("SELECT id FROM clients ORDER BY id LIMIT 4")
+        cur.execute("SELECT id FROM clients ORDER BY id LIMIT 5")
         ids = [r["id"] for r in cur.fetchall()]
-        if len(ids) >= 4:
+        if len(ids) >= 5:
             sample_comms = [
                 (ids[2], "Email sent", "Partnership with AI Ko-Bato",
                  "2026-05-18", "Replied", "Sent initial proposal. Got positive response."),
