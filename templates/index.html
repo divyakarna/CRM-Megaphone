@@ -172,7 +172,33 @@ textarea.fi{resize:vertical;min-height:72px}
 /* ── LOADER ── */
 .loader{display:flex;align-items:center;justify-content:center;padding:40px;color:var(--text3);gap:10px;font-size:14px}
 
-@media(max-width:640px){.cgrid{grid-template-columns:1fr}.fgrid{grid-template-columns:1fr}.dgrid{grid-template-columns:1fr}.nav-tabs{display:none}}
+/* ── MOBILE BOTTOM NAV ── */
+.mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);z-index:100;padding:6px 0 env(safe-area-inset-bottom,6px)}
+.mob-nav-inner{display:flex;justify-content:space-around;align-items:center}
+.mob-tab{display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;cursor:pointer;color:var(--text3);font-family:'DM Sans',sans-serif;font-size:10px;padding:6px 12px;border-radius:var(--rsm);transition:color .15s;position:relative;min-width:52px}
+.mob-tab i{font-size:20px}
+.mob-tab.active{color:var(--pink-500)}
+.mob-tab .fu-dot{position:absolute;top:4px;right:10px;width:7px;height:7px;background:var(--pink-500);border-radius:50%;border:2px solid #fff;display:none}
+.mob-tab .fu-dot.show{display:block}
+
+@media(max-width:640px){
+  .cgrid{grid-template-columns:1fr}
+  .fgrid{grid-template-columns:1fr}
+  .dgrid{grid-template-columns:1fr}
+  .nav-tabs{display:none}
+  .nav{padding:0 16px}
+  .nav-right .btn span{display:none}
+  .page{padding:16px;padding-bottom:80px}
+  .mob-nav{display:block}
+  .mbox{border-radius:14px;padding:20px;margin:0}
+  .mo{padding:12px;align-items:flex-end}
+  .mbox{max-height:92vh}
+  table{min-width:520px}
+  .mgrid{grid-template-columns:repeat(3,1fr)}
+  .mc-value{font-size:26px}
+  .ri{cursor:pointer}
+  .ri:active{background:var(--pink-50)}
+}
 </style>
 </head>
 <body>
@@ -355,6 +381,17 @@ textarea.fi{resize:vertical;min-height:72px}
 
 <div class="toast" id="toast"><i class="ti ti-check" aria-hidden="true"></i><span id="tmsg"></span></div>
 
+<!-- ═══ MOBILE BOTTOM NAV ═══ -->
+<div class="mob-nav">
+  <div class="mob-nav-inner">
+    <button class="mob-tab active" onclick="showPage('dashboard',this)" data-page="dashboard"><i class="ti ti-layout-dashboard"></i><span>Home</span></button>
+    <button class="mob-tab" onclick="showPage('clients',this)" data-page="clients"><i class="ti ti-users"></i><span>Clients</span></button>
+    <button class="mob-tab" onclick="showPage('emails',this)" data-page="emails"><i class="ti ti-mail"></i><span>Emails</span></button>
+    <button class="mob-tab" onclick="showPage('followups',this)" data-page="followups"><i class="ti ti-bell"></i><span>Follow-ups</span><div class="fu-dot" id="mob-fu-dot"></div></button>
+    <button class="mob-tab" onclick="showPage('ai',this)" data-page="ai"><i class="ti ti-sparkles"></i><span>AI</span></button>
+  </div>
+</div>
+
 <script>
 // ── HELPERS ──────────────────────────────────────────────────────────────────
 const AVC=[['#ffd6de','#c4284f'],['#e8e8d8','#3d3d1a'],['#fce4ec','#880e4f'],
@@ -388,9 +425,11 @@ async function loadAll(){
 // ── NAV ──────────────────────────────────────────────────────────────────────
 function showPage(p,el){
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.nav-tab,.mob-tab').forEach(x=>x.classList.remove('active'));
   document.getElementById('page-'+p).classList.add('active');
   el.classList.add('active');
+  // sync the other nav set
+  document.querySelectorAll(`.nav-tab[onclick*="'${p}'"],.mob-tab[data-page="${p}"]`).forEach(x=>x.classList.add('active'));
   if(p==='dashboard')renderDash();
   if(p==='clients'){renderTable();populateCountryFilter()}
   if(p==='emails')renderEmails();
@@ -403,6 +442,8 @@ function updateFUBadge(){
   const n=clients.filter(c=>c.followup&&fmtDate(c.followup)<=today&&!['Onboarded','Rejected','Not Interested'].includes(c.status)).length;
   const b=document.getElementById('fu-n');
   if(n>0){b.textContent=n;b.style.display='inline'}else{b.style.display='none'}
+  const dot=document.getElementById('mob-fu-dot');
+  if(dot)dot.classList.toggle('show',n>0);
 }
 
 // ── DASHBOARD ────────────────────────────────────────────────────────────────
@@ -444,7 +485,7 @@ async function renderDash(){
   const rec=clients.slice(0,5);
   document.getElementById('recent').innerHTML=rec.length?rec.map(c=>{
     const[bg,fg]=avc(c.channel);
-    return`<div class="ri"><div class="av" style="background:${bg};color:${fg}">${ini(c.channel)}</div><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.channel}</div><div style="font-size:11px;color:var(--text3)">${c.country||'—'} · ${c.theme||'—'}</div></div>${sbadge(c.status)}</div>`;
+    return`<div class="ri" onclick="showDetail(${c.id})" style="cursor:pointer" title="View ${c.channel}"><div class="av" style="background:${bg};color:${fg}">${ini(c.channel)}</div><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.channel}</div><div style="font-size:11px;color:var(--text3)">${c.country||'—'} · ${c.theme||'—'}</div></div>${sbadge(c.status)}<i class="ti ti-chevron-right" style="color:var(--text3);font-size:16px;flex-shrink:0"></i></div>`;
   }).join(''):`<div class="empty"><i class="ti ti-users"></i><p>No clients yet. Click "Add client" to start.</p></div>`;
 }
 
